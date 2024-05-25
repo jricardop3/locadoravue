@@ -64,6 +64,9 @@ class MarcaController extends Controller
     {
         //$marca->update($request->all());
         $marca = $this->marca->find($id);
+        if ($marca === null){
+            return ['erro' => 'impossível realizar a atualização!'];
+        }       
         $marca -> update($request->all());
         return $marca;
     }
@@ -78,6 +81,9 @@ class MarcaController extends Controller
     {
         //$marca->delete();
         $marca = $this->marca->find($id);
+        if ($marca === null){
+            return ['erro' => 'impossível apagar, recurso não disponivel!'];
+        }    
         $marca -> delete();
         return $marca;
 
