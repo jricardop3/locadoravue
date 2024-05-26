@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class MarcaController extends Controller
 {
@@ -20,7 +21,7 @@ class MarcaController extends Controller
     {
         //$marcas = Marca::all();
         $marcas = $this->marca->all();
-        return $marcas;
+        return response()->json($marcas, 200);
     }
 
     /**
@@ -32,8 +33,12 @@ class MarcaController extends Controller
     public function store(Request $request)
     {
         //$marca = Marca::create($request->all());
+ 
+
+        $request->validate($this->marca->rules(), $this->marca->feedback());
+
        $marca = $this->marca->create($request->all());
-        return $marca;
+       return response()->json($marca, 200);
 
     }
 
@@ -48,9 +53,9 @@ class MarcaController extends Controller
         $marca = $this->marca->find($id);
        // $marcas = $marca;
         if ($marca === null){
-            return ['erro' => 'recurso pesquisado não existe!'];
+            return response()->json(['erro' => 'recurso pesquisado não existe!'], 404);
         } 
-        return $marca;
+        return response()->json($marca, 201);
     }
 
     /**
@@ -63,12 +68,14 @@ class MarcaController extends Controller
     public function update(Request $request, $id)
     {
         //$marca->update($request->all());
+        
         $marca = $this->marca->find($id);
         if ($marca === null){
-            return ['erro' => 'impossível realizar a atualização!'];
-        }       
+            return response()->json(['erro' => 'recurso pesquisado não existe!'], 404);
+        }
+        $request->validate($this->marca->rules(), $this->marca->feedback());
         $marca -> update($request->all());
-        return $marca;
+        return response()->json($marca, 200);
     }
 
     /**
@@ -82,10 +89,10 @@ class MarcaController extends Controller
         //$marca->delete();
         $marca = $this->marca->find($id);
         if ($marca === null){
-            return ['erro' => 'impossível apagar, recurso não disponivel!'];
+            return response()->json(['erro' => 'recurso pesquisado não existe!'], 404);
         }    
         $marca -> delete();
-        return $marca;
+        return response()->json(['msg' => ' a Marca foi Deletada com sucesso!'], 200);;
 
     }
 }
