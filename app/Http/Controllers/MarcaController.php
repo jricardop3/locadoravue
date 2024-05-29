@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Contracts\Service\Attribute\Required;
 
 class MarcaController extends Controller
 {
     protected $marca; 
-    public function __construct(Marca $marca){
+    public function __construct(Marca $marca){ 
         $this->marca = $marca;
     }
     /**
@@ -20,7 +21,7 @@ class MarcaController extends Controller
     public function index()
     {
         //$marcas = Marca::all();
-        $marcas = $this->marca->all();
+        $marcas = $this->marca->with('modelos')->get();
         return response()->json($marcas, 200);
     }
 
@@ -36,9 +37,15 @@ class MarcaController extends Controller
  
 
         $request->validate($this->marca->rules(), $this->marca->feedback());
-
-       $marca = $this->marca->create($request->all());
-       return response()->json($marca, 200);
+        $imagem = $request->file('imagem');
+        
+        $imagem_urn = $imagem -> store('imagens', 'public');
+        $marca = $this->marca->create([
+            'nome' => $request->nome,
+            'imagem' =>$imagem_urn
+        ]);
+       //$marca = $this->marca->create($request->all());
+       return response()->json($marca, 201);
 
     }
 
@@ -50,7 +57,7 @@ class MarcaController extends Controller
      */
     public function show($id)
     {
-        $marca = $this->marca->find($id);
+        $marca = $this->marca->with('modelos')->find($id);
        // $marcas = $marca;
         if ($marca === null){
             return response()->json(['erro' => 'recurso pesquisado não existe!'], 404);
@@ -90,7 +97,21 @@ class MarcaController extends Controller
             $request->validate($this->marca->rules(), $this->marca->feedback());
             
         }
-        $marca -> update($request->all());
+        if ($request->file('imagem')){
+            Storage::disk('public')->delete($marca->imagem);
+        }
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem -> store('imagens', 'public');
+
+        $marca->fill($request->all());
+        $marca-> imagem = $imagem_urn;
+        /*
+        $marca -> update([
+            'nome' => $request->nome,
+            'imagem' =>$imagem_urn
+        ]);
+        */
+        $marca->save();
         return response()->json($marca, 200);
     }
 
@@ -107,6 +128,9 @@ class MarcaController extends Controller
         if ($marca === null){
             return response()->json(['erro' => 'recurso pesquisado não existe!'], 404);
         }    
+        
+            Storage::disk('public')->delete($marca->imagem);
+       
         $marca -> delete();
         return response()->json(['msg' => ' a Marca foi Deletada com sucesso!'], 200);;
 
