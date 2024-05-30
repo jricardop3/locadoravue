@@ -6,6 +6,7 @@ use App\Models\Marca;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Contracts\Service\Attribute\Required;
+use App\Repositories\MarcaRepository;
 
 class MarcaController extends Controller
 {
@@ -20,6 +21,28 @@ class MarcaController extends Controller
      */
     public function index(Request $request)
     {
+
+        $marcaRepository = new MarcaRepository($this->marca);
+
+        if($request->has('atributos_modelos')) {
+            $atributos_modelos = 'modelos:id,'.$request->atributos_modelos;
+            $marcaRepository->selectAtributosRegistrosRelacionados($atributos_modelos);
+        } else {
+            $marcaRepository->selectAtributosRegistrosRelacionados('modelos');
+        }
+
+        if($request->has('filtro')) {
+            $marcaRepository->filtro($request->filtro);
+        }
+
+        if($request->has('atributos')) {
+            $marcaRepository->selectAtributos($request->atributos);
+        } 
+
+        return response()->json($marcaRepository->getResultado(), 200);
+    
+        //--------------------------------------
+        /*
         $marcas = array();
         if ($request->has('atributos_modelos')){
             $atributos_modelos = $request->atributos_modelos;
@@ -45,7 +68,8 @@ class MarcaController extends Controller
         }
         //$marcas = Marca::all();
         //$marcas = $this->marca->with('modelos')->get();
-        return response()->json($marcas, 200);
+        */
+        
     }
 
     /**

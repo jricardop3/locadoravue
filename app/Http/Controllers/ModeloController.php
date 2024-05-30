@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Modelo;
+use App\Repositories\ModeloRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,26 @@ class ModeloController extends Controller
      */
     public function index(Request $request) 
     {
+        $modeloRepository = new ModeloRepository($this->modelo);
+
+        if($request->has('atributos_marca')) {
+            $atributos_marca = 'marca:id,'.$request->atributos_marca;
+            $modeloRepository->selectAtributosRegistrosRelacionados($atributos_marca);
+        } else {
+            $modeloRepository->selectAtributosRegistrosRelacionados('marca');
+        }
+
+        if($request->has('filtro')) {
+            $modeloRepository->filtro($request->filtro);
+        }
+
+        if($request->has('atributos')) {
+            $modeloRepository->selectAtributos($request->atributos);
+        } 
+
+        return response()->json($modeloRepository->getResultado(), 200);
+
+        /*
         $modelos = array();
         if ($request->has('atributos_marca')){
             $atributos_marca = $request->atributos_marca;
@@ -44,6 +65,7 @@ class ModeloController extends Controller
         }
         
         return response()->json($modelos, 200);
+        */
     }
 
     /**
@@ -51,10 +73,10 @@ class ModeloController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    //public function create()
+    //{
         //
-    }
+   // }
 
     /**
      * Store a newly created resource in storage.
@@ -108,10 +130,10 @@ class ModeloController extends Controller
      * @param  \App\Models\Modelo  $modelo
      * @return \Illuminate\Http\Response
      */
-    public function edit(Modelo $modelo)
-    {
+    //public function edit(Modelo $modelo)
+    //{
         //
-    }
+    //}
 
     /**
      * Update the specified resource in storage.
