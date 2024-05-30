@@ -26,12 +26,19 @@ class ModeloController extends Controller
         } else {
             $modelos = $this->modelo->with('marca');
         }
+        if ($request->has('filtros')){
+            $filtros = explode(';',$request->filtros);
+            foreach ($filtros as $condicao){
+                $c = explode(':',$condicao);
+                $modelos = $modelos->where($c[0], $c[1], $c[2]);
+            
+            $condicoes = explode(':',$request->filtros);
+            $modelos = $modelos->where($condicoes[0], $condicoes[1], $condicoes[2]);
+            }
+        }
         if ($request->has('atributos')){
-            $atributos = $request->atributos;
-            
-            
+            $atributos = $request->atributos;    
             $modelos = $modelos->selectRaw($atributos)->get();
-           // dd($atributos);
         }else {
             $modelos = $modelos->get();
         }
