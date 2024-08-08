@@ -60,41 +60,49 @@
 </template>
 
 <script>
-    export default 
-    {
-        props:['csrf_token'],
-        data(){
+    export default {
+        props: ['csrf_token'],
+        data() {
             return {
                 email: '',
                 password: ''
-            }
+            };
         },
-        methods:{
-            login(e){
-                
-                let url = 'http://locadoravue.test/api/login'
+        methods: {
+            login(e) {
+                e.preventDefault();  // Previna o envio padrão do formulário
+
+                let url = 'http://locadoravue.test/api/login';
                 let configuracao = {
                     method: 'post',
-                    body: new URLSearchParams({ 
-                        'email': this.email, 
-                        'password': this.password 
-                        })
-                }
-            fetch(url, configuracao)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.Token) {
-                        // Define o cookie com SameSite e Secure (se necessário)
-                        document.cookie = `token=${encodeURIComponent(data.token)};SameSite=Lax`
-                    }
-                    // Envia o formulário apenas se necessário
-                    e.target.submit()
-                })
-                .catch(error => {
-                    console.error('Erro na autenticação:', error);
-                    // Lógica para tratar erros
-                });
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'  // Adicionando cabeçalho
+                    },
+                    body: new URLSearchParams({
+                        'email': this.email,
+                        'password': this.password
+                    })
+                };
+
+                fetch(url, configuracao)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Resposta da API:', data);  // Verifique a estrutura da resposta
+                        if (data.token) {
+                            document.cookie = `token=${data.token}; SameSite=Lax`;
+                        } else {
+                            console.error('Token não encontrado na resposta:', data);
+                        }
+                        // dar sequência no envio do form de autenticação por sessão
+                        e.target.submit();
+                    })
+                    .catch(error => {
+                        console.error('Erro na autenticação:', error);
+                        // Lógica para tratar erros
+                    });
+            }
         }
     }
-}
 </script>
+
+
